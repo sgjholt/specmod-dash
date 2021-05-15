@@ -15,10 +15,10 @@ import numpy as np
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
 
 from src.specplot import *
 from src.loadspec import get_event_spectra, ev
+from src.utils import *
 from dash.dependencies import Input, Output, State
 
 
@@ -28,7 +28,7 @@ SP = get_event_spectra(ev)
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SPACELAB],
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}],
-                title="SpecMod"
+                title="SpecMod Dash"
                 )
 
 # app layout ------------------------------------------------------------------
@@ -108,42 +108,6 @@ app.layout = dbc.Container([
 		)
     ])
 
-
-def trace_in_fig(fig: go.Figure, name: str) -> bool:
-	"""
-	Looks for the trace with a given name and returns True if
-	it exists or False if it does not.
-
-	Args:
-		fig (plotly.graph_ojects.Figure): A figure object to be checked.
-		name (str): The name of the trace to look for.
-
-	Returns
-	-------
-		tr (bool): True if the trace is in figure, False otherwise.
-	"""
-
-	tf = False
-	for trace in fig['data']:
-		try:
-			if trace['name'] in [name]:
-				return not tf 
-		except TypeError:
-			continue
-	return tf
-
-def is_auto_bandwidth(fig, pos):
-
-	for trace in fig['data']:
-		if 10**pos == trace['x'][0]:
-				return True
-
-	return False 
-
-def check_for_none(*args):
-	for arg in args:
-		if arg is None:
-			return True
 
 # callbacks 
 
