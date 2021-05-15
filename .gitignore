@@ -115,5 +115,5 @@ dmypy.json
 
 # other
 .DS_Store
-SpecMod
+# SpecMod
 Events/*
