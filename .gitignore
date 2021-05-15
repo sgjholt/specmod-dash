@@ -114,6 +114,6 @@ dmypy.json
 .pyre/
 
 # other
-.DS_Store/
+.DS_Store
 SpecMod
 Events/*
