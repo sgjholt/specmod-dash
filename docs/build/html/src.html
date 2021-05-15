@@ -1,66 +1,202 @@
 
 
-<!doctype html>
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>src package &mdash; specmod-dash 2021 documentation</title>
+  
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
 
-    <title>src package &#8212; specmod-dash 2021 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/bizstyle.css" />
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/bizstyle.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="main module" href="main.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="main.html" title="main module"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">specmod-dash 2021 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">specmod-dash</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">src package</a></li> 
-      </ul>
-    </div>  
+    <link rel="prev" title="main module" href="main.html" /> 
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> specmod-dash
+          
+
+          
+          </a>
+
+          
             
-  <section id="src-package">
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">SpecMod Dash - README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html#documentation">Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">specmod-dash</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">src package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.loadspec">src.loadspec module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.specplot">src.specplot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.utils">src.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src">Module contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.loadspec.get_event_spectra">get_event_spectra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.specplot.get_band_vals">get_band_vals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.specplot.get_marks">get_marks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.specplot.get_min_max_freqs">get_min_max_freqs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.specplot.make_fig">make_fig</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.check_for_none">check_for_none</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.is_auto_bandwidth">is_auto_bandwidth</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.trace_in_fig">trace_in_fig</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">specmod-dash</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="modules.html">specmod-dash</a> &raquo;</li>
+        
+      <li>src package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/src.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="src-package">
 <h1>src package<a class="headerlink" href="#src-package" title="Permalink to this headline">¶</a></h1>
-<section id="submodules">
+<div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
-</section>
-<section id="module-src.loadspec">
+</div>
+<div class="section" id="module-src.loadspec">
 <span id="src-loadspec-module"></span><h2>src.loadspec module<a class="headerlink" href="#module-src.loadspec" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.loadspec.get_event_spectra">
-<span class="sig-prename descclassname"><span class="pre">src.loadspec.</span></span><span class="sig-name descname"><span class="pre">get_event_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">SpecMod.specmod.Spectral.Spectra</span><a class="headerlink" href="#src.loadspec.get_event_spectra" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.loadspec.</span></span><span class="sig-name descname"><span class="pre">get_event_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">SpecMod.specmod.Spectral.Spectra</span><a class="headerlink" href="#src.loadspec.get_event_spectra" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
-<section id="module-src.specplot">
+</div>
+<div class="section" id="module-src.specplot">
 <span id="src-specplot-module"></span><h2>src.specplot module<a class="headerlink" href="#module-src.specplot" title="Permalink to this headline">¶</a></h2>
 <p>specplot.py</p>
 <blockquote>
@@ -87,8 +223,8 @@
 <span class="sig-prename descclassname"><span class="pre">src.specplot.</span></span><span class="sig-name descname"><span class="pre">make_fig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pass_snr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.specplot.make_fig" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
-<section id="module-src.utils">
+</div>
+<div class="section" id="module-src.utils">
 <span id="src-utils-module"></span><h2>src.utils module<a class="headerlink" href="#module-src.utils" title="Permalink to this headline">¶</a></h2>
 <p>A module that contains utility functions for specmod-dash.</p>
 <dl class="py function">
@@ -106,91 +242,66 @@
 <span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">trace_in_fig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">plotly.graph_objs._figure.Figure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#src.utils.trace_in_fig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Looks for the trace with a given name and returns True if
 it exists or False if it does not.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fig</strong> (<em>plotly.graph_ojects.Figure</em>) – A figure object to be checked.</p></li>
-<li><p><strong>name</strong> (<em>str</em>) – The name of the trace to look for.</p></li>
-</ul>
+<dl class="simple">
+<dt>Args:</dt><dd><p>fig (plotly.graph_ojects.Figure): A figure object to be checked.
+name (str): The name of the trace to look for.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>tr (bool)</strong></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>True if the trace is in figure, False otherwise.</p>
+<dt>Returns:</dt><dd><p>tr (bool): True if the trace is in figure, False otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
-<section id="module-src">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>
-</section>
-</section>
-
-
-            <div class="clearer"></div>
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">src package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-src.loadspec">src.loadspec module</a></li>
-<li><a class="reference internal" href="#module-src.specplot">src.specplot module</a></li>
-<li><a class="reference internal" href="#module-src.utils">src.utils module</a></li>
-<li><a class="reference internal" href="#module-src">Module contents</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="main.html"
-                        title="previous chapter">main module</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/src.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<div class="section" id="module-src">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="main.html" class="btn btn-neutral float-left" title="main module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, James Holt.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="main.html" title="main module"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">specmod-dash 2021 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="modules.html" >specmod-dash</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">src package</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-        &#169; Copyright 2021, James Holt.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.1.
-    </div>
-  </body>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
 </html>

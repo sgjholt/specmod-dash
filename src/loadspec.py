@@ -8,11 +8,11 @@ ev = "2012-10-08T12:12:12.760000Z"
 
 
 
-def get_event_spectra(ev: str) -> Spectra:
+def get_event_spectra(pdir: str, ev: str) -> Spectra:
 	"""
 
 	"""
-	E = f"../Events/{ev}/Spectra/{ev}.spec"
+	E = f"{pdir}/{ev}/Spectra/{ev}.spec"
 	sp = Spectra.read_spectra(E, skip_warning=True, method='pickle')
 	print("loaded {}".format(E.split("/")[-1]))
 	print(sp)

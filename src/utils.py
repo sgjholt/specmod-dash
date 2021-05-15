@@ -14,8 +14,7 @@ def trace_in_fig(fig: go.Figure, name: str) -> bool:
 		fig (plotly.graph_ojects.Figure): A figure object to be checked.
 		name (str): The name of the trace to look for.
 
-	Returns
-	-------
+	Returns:
 		tr (bool): True if the trace is in figure, False otherwise.
 	"""
 
