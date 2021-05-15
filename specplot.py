@@ -30,6 +30,7 @@ def get_marks(mn: np.ndarray,
 
 def get_band_vals(snp):
 
+	value = get_min_max_freqs(snp)
 
 	if snp.signal.get_pass_snr():
 		try:
@@ -37,8 +38,7 @@ def get_band_vals(snp):
 			         np.round(snp.ubfreqs[1], 1)])
 
 		except IndexError:
-			value = get_min_max_freqs(snp)
-
+			pass
 	else:
 		value = None
 
@@ -46,7 +46,7 @@ def get_band_vals(snp):
 
 
 
-def make_fig(sfreq, samp, nfreq, namp, vals=None, npos=None):
+def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 
 	fac=1.25
 
@@ -70,7 +70,7 @@ def make_fig(sfreq, samp, nfreq, namp, vals=None, npos=None):
 			)
 		)
 
-	if vals is not None:
+	if vals is not None and pass_snr:
 		for val, sl in zip(vals, [True, False]):
 			fig.add_trace(
 				go.Scatter(
@@ -84,25 +84,6 @@ def make_fig(sfreq, samp, nfreq, namp, vals=None, npos=None):
 					line_width=2,
 					line_color='black', 
 					name="auto bandwidth", 
-					showlegend=sl
-					),
-				)
-
-	if npos is not None and not np.array_equal(npos, vals):
-		for pos, sl in zip(npos, [True, False]):
-			fig.add_trace(
-				go.Scatter(
-					x=[10**pos, 10**pos], 
-					y=[np.min([samp.min()/fac, 
-					   namp.min()/fac]), 
-				       np.max([samp.max()*fac, 
-					   namp.max()*fac])
-					   ], 
-					mode='lines',
-					line_width=3,
-					line_dash='dash',
-					line_color='green', 
-					name="new bandwidth", 
 					showlegend=sl
 					),
 				)

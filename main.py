@@ -15,16 +15,11 @@ import numpy as np
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 
 from specplot import *
 from loadspec import get_event_spectra, ev
-from dash.dependencies import Input, Output
-
-
-
-
-
-
+from dash.dependencies import Input, Output, State
 
 
 # globals ---------------------------------------------------------------------
@@ -70,7 +65,6 @@ app.layout = dbc.Container([
         			{'label': 'True', 'value': 1},
         			{'label': 'False', 'value': 0},
     			],
-    			value=1
     			)
 			])
 		]),
@@ -102,20 +96,52 @@ app.layout = dbc.Container([
 	        ]),  
     	),
 	dbc.Row(
-		dbc.Col(
-			html.Pre(id='log'),
-			)
+		dbc.Col([
+			html.Hr(),
+    			html.Details([
+        			html.Summary('Contents of figure storage'),
+        				dcc.Markdown(
+            				id='log'
+        				)
+    				])
+			])
 		)
     ])
 
+
+def trace_in_fig(fig, name):
+	for trace in fig['data']:
+		try:
+			if trace['name'] in [name]:
+				return True
+		except TypeError:
+			continue
+	return False 
+
+def is_auto_bandwidth(fig, pos):
+
+	for trace in fig['data']:
+		if 10**pos == trace['x'][0]:
+				return True
+
+	return False 
+
+def check_for_none(*args):
+	for arg in args:
+		if arg is None:
+			return True
 
 # callbacks 
 
 @app.callback(
     Output('log', 'children'),
-    Input('slider-position', 'value'))
+    Input('slider-position', 'value')
+    )
 def display_selected_data(vals):
-    return f'min f: {10**vals[0]:.1f}, max f: {10**vals[1]:.1f}' 
+	x = None
+	if vals is not None:
+		x = f'min f: {10**vals[0]:.1f}, max f: {10**vals[1]:.1f}'
+	return x
 
 @app.callback([
 	 Output("graph", "figure"), 
@@ -123,13 +149,11 @@ def display_selected_data(vals):
      Output("slider-position", "min"),
      Output("slider-position", "max"),
      Output("slider-position", "marks"),
-     Output("snr-pass", "value")
+     Output("snr-pass", "value"),
     ],
     [Input("station-dropdown", "value"), ]
     )
 def display_graph_initial(station):
-
-	global SP
 
 	snp = SP.get_spectra(station)
 
@@ -144,40 +168,70 @@ def display_graph_initial(station):
 		snp.signal.amp,
 		snp.noise.freq, 
 		snp.noise.amp,
+		snp.signal.get_pass_snr(),
 		value,
 		)
 
-	return fig, value, mn, mx, marks, 1 if snp.signal.get_pass_snr() else 0
+	return fig, value, mn, mx, marks, (1 if snp.signal.get_pass_snr() else 0)
 
 
 @app.callback(
-     Output("graph", "figure"),
-     [Input("slider-position", "value"),
-      Input("station-dropdown", "value"),
-      Input("snr-pass", "value")]
-     )
-def display_graph_update(pos, station, snr):
+	Output("graph", "figure"),
+	Input("slider-position", "value"),
+	State("graph", "figure"),
+	)
+def display_graph_update(npos, fig):
 
-	global SP
 
-	snp = SP.get_spectra(station)
-	snp.signal.set_pass_snr(snr)
+	fig = go.Figure(fig)
 
-	value = get_band_vals(snp)
+	if not check_for_none(npos, fig, fig['layout']['yaxis']['range']):
 
-	fig = make_fig(
-		snp.signal.freq, 
-		snp.signal.amp,
-		snp.noise.freq, 
-		snp.noise.amp,
-		value,
-		pos,
-		)
+		for pos, nm in zip(npos, ['start', 'end']):
+			
+			name = f"new bandwidth {nm}"
+
+			if not is_auto_bandwidth(fig, pos):
+				if not trace_in_fig(fig, name):
+					fig.add_trace(
+						go.Scatter(
+							x=[10**pos, 10**pos], 
+							y=np.power(10, fig['layout']['yaxis']['range']),
+							mode='lines',
+							line_width=3,
+							line_dash='dash',
+							line_color='green', 
+							name=f"new bandwidth {nm}", 
+						)
+					)
+
+				else:
+					fig.for_each_trace(
+						lambda trace: trace.update(
+							x=[10**pos, 10**pos],
+
+							) if trace.name == name else (),
+						)
 
 	return fig
 
 
 
+@app.callback(
+	[Output("log", "children"),],
+	[Input("snr-pass", "value"), ],
+	[State("station-dropdown", "value"), ],
+	)
+def change_snr(snr, sta):
+	if snr is not None:
+		snp = SP.get_spectra(sta)
+		print(snr)
+		print(f"{sta} pass snr is {snp.signal.get_pass_snr()}")
+		if bool(snr) != snp.signal.get_pass_snr():
+			snp.signal.set_pass_snr(bool(snr))
+			return(f"changed {sta} pass snr to {bool(snr)}", )
+	return dash.no_update
+	
 
 
 if __name__ == '__main__':
