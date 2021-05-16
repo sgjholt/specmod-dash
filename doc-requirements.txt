@@ -8,4 +8,5 @@ numpy
 pandas
 plotly
 scipy
+sphinx-autoapi
 
