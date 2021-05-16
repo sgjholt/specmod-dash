@@ -2,12 +2,10 @@ dash
 dash-bootstrap-components
 dash-core-components
 dash-html-components
-lmfit==1.0.2
-matplotlib==3.3.4
-mtspec==0.3.2
-numpy==1.20.1
-obspy==1.2.2
-pandas==1.2.4
-plotly==4.14.3
-scipy==1.5.1
+lmfit
+matplotlib
+numpy
+pandas
+plotly
+scipy
 
