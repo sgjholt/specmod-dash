@@ -193,6 +193,15 @@ def display_graph_update(npos, fig):
 
     return fig
 
+# @app.callback(
+#     Output("graph", "figure"),
+#     Input("snr-pass", "value"),
+#     State("graph", "figure")
+#     )
+# def show_bandwidth_lims():
+#     pass
+
+
 @app.callback(
     [Output("log", "children"), ],
     [Input("snr-pass", "value"), ],
