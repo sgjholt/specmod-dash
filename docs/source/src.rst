@@ -4,18 +4,18 @@ src package
 Submodules
 ----------
 
-src.loadspec module
--------------------
-
-.. automodule:: src.loadspec
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 src.specplot module
 -------------------
 
 .. automodule:: src.specplot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+src.specroutines module
+-----------------------
+
+.. automodule:: src.specroutines
    :members:
    :undoc-members:
    :show-inheritance:

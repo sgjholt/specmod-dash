@@ -95,16 +95,16 @@
 <li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">src package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-src.loadspec">src.loadspec module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.specplot">src.specplot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.specroutines">src.specroutines module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.utils">src.utils module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src">Module contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#src.loadspec.get_event_spectra">get_event_spectra</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#src.specplot.get_band_vals">get_band_vals</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#src.specplot.get_marks">get_marks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#src.specplot.get_min_max_freqs">get_min_max_freqs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#src.specplot.make_fig">make_fig</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#src.utils.check_for_none">check_for_none</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.specroutines.get_event_spectra">get_event_spectra</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.any_none">any_none</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#src.utils.is_auto_bandwidth">is_auto_bandwidth</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#src.utils.trace_in_fig">trace_in_fig</a></li>
 </ul>
@@ -188,14 +188,6 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-src.loadspec">
-<span id="src-loadspec-module"></span><h2>src.loadspec module<a class="headerlink" href="#module-src.loadspec" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="src.loadspec.get_event_spectra">
-<span class="sig-prename descclassname"><span class="pre">src.loadspec.</span></span><span class="sig-name descname"><span class="pre">get_event_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">SpecMod.specmod.Spectral.Spectra</span><a class="headerlink" href="#src.loadspec.get_event_spectra" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
 <div class="section" id="module-src.specplot">
 <span id="src-specplot-module"></span><h2>src.specplot module<a class="headerlink" href="#module-src.specplot" title="Permalink to this headline">¶</a></h2>
 <p>specplot.py</p>
@@ -224,12 +216,34 @@
 <dd></dd></dl>
 
 </div>
+<div class="section" id="module-src.specroutines">
+<span id="src-specroutines-module"></span><h2>src.specroutines module<a class="headerlink" href="#module-src.specroutines" title="Permalink to this headline">¶</a></h2>
+<p>specroutines.py</p>
+<blockquote>
+<div><p>The file with functions to connect and manipulate SpecMod objects 
+for use with Dash.</p>
+</div></blockquote>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.specroutines.get_event_spectra">
+<span class="sig-prename descclassname"><span class="pre">src.specroutines.</span></span><span class="sig-name descname"><span class="pre">get_event_spectra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ev</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">SpecMod.specmod.Spectral.Spectra</span><a class="headerlink" href="#src.specroutines.get_event_spectra" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads in the spectra for a given local specmod event spectra group
+for a given event (datetime string).</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pdir (str): The parent directory of the specmod spectra pickle file
+ev (str): The event datetime (e.g., “2012-10-08T12:12:12.760000Z”)</p>
+</dd>
+<dt>Returns:</dt><dd><p>tr (specmod.Spectra): A SpecMod spectral instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
 <div class="section" id="module-src.utils">
 <span id="src-utils-module"></span><h2>src.utils module<a class="headerlink" href="#module-src.utils" title="Permalink to this headline">¶</a></h2>
 <p>A module that contains utility functions for specmod-dash.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="src.utils.check_for_none">
-<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">check_for_none</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.utils.check_for_none" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="src.utils.any_none">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">any_none</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.utils.any_none" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
