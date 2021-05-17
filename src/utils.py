@@ -35,7 +35,5 @@ def is_auto_bandwidth(fig, pos):
 
 	return False 
 
-def check_for_none(*args):
-	for arg in args:
-		if arg is None:
-			return True
+def any_none(*args):
+    return [x for x in args if x is None]

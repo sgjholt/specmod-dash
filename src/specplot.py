@@ -40,7 +40,7 @@ def get_band_vals(snp):
 		except IndexError:
 			pass
 	else:
-		value = None
+		value = None, None
 
 	return value
 
@@ -83,8 +83,9 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 					mode='lines',
 					line_width=2,
 					line_color='black', 
-					name="auto bandwidth", 
-					showlegend=sl
+					name="bandwidth", 
+					showlegend=sl,
+					visible=True
 					),
 				)
 

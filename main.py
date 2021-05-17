@@ -9,21 +9,28 @@ main.py
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
+# dependencies 
 import os
 import dash
 import numpy as np
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-
-from src.specplot import *
-from src.loadspec import get_event_spectra, ev
-from src.utils import *
 from dash.dependencies import Input, Output, State
-
+# local imports
+from src.utils import *
+from src.specplot import *
+from src.specroutines import get_event_spectra
+# global paths
 import Events
+
+
 # globals ---------------------------------------------------------------------
-SP = get_event_spectra(Events.__path__._path[0], ev)
+
+# test event
+EV = "2012-10-08T12:12:12.760000Z"
+# shared specmod spectral group
+SP = get_event_spectra(Events.__path__._path[0], EV)
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SPACELAB],
                 meta_tags=[{'name': 'viewport',
@@ -33,6 +40,20 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SPACELAB],
 
 # app layout ------------------------------------------------------------------
 app.layout = dbc.Container([
+
+    dcc.Store(id="store"),
+
+    dbc.Row([
+        dbc.Col([
+            dbc.Alert(
+                children=[],
+                id="alert-auto",
+                dismissable=True,
+                is_open=False,
+                duration=8000
+            ),
+            ], width=12),
+        ]),
 
     dbc.Row([
         dbc.Col(
@@ -62,11 +83,22 @@ app.layout = dbc.Container([
             dcc.RadioItems(
                 id='snr-pass',
                 options=[
-                    {'label': 'True', 'value': 1},
-                    {'label': 'False', 'value': 0},
+                    {'label': 'Yes', 'value': 1},
+                    {'label': 'No', 'value': 0},
                 ],
                 )
-            ])
+            ]),
+        dbc.Col([
+
+            html.H5('Control Panel'),
+
+            dbc.Button(
+                'stage change',
+                id='stage-change',
+                className='mr-2',
+                n_clicks=0,
+                )
+            ]),
         ]),
 
     dbc.Row(
@@ -95,75 +127,128 @@ app.layout = dbc.Container([
                 ),
             ]),  
         ),
-    dbc.Row(
-        dbc.Col([
-            html.Hr(),
-                html.Details([
-                    html.Summary('Contents of figure storage'),
-                        dcc.Markdown(
-                            id='log'
-                        )
-                    ])
-            ])
-        )
     ])
 
 
 # callbacks 
 
 @app.callback(
-    Output('log', 'children'),
-    Input('slider-position', 'value')
+    Output("store", "data"),
+    Input("station-dropdown", "value"),
     )
-def display_selected_data(vals):
-    x = None
-    if vals is not None:
-        x = f'min f: {10**vals[0]:.1f}, max f: {10**vals[1]:.1f}'
-    return x
+def update_store(sta):
+
+    snp = SP.get_spectra(sta)
+    # min max frequencies possible
+    mn, mx = get_min_max_freqs(snp)
+    # min max frequencies of best modeling bandwidth
+    mnb, mxb = get_band_vals(snp)
+        
+    return {"station":sta, 
+            "snr": 1 if snp.signal.get_pass_snr() else 0,
+            "min f": mn,
+            "max f": mx,
+            "min bf":mnb,
+            "max bf":mxb,
+            }
+
+@app.callback(
+    [Output('alert-auto', 'children'), 
+     Output('alert-auto', 'is_open'),
+     Output('station-dropdown', 'value'),
+     ],
+    [Input('stage-change', 'n_clicks')],
+    [State('alert-auto', 'is_open'), 
+     State('snr-pass', 'value'),
+     State('store', 'data')]
+)
+def stage_change(*args):
+
+    n, is_open, snr, data = args
+    
+    if not any_none(args) and n:
+
+        snp = SP.get_spectra(data["station"])
+
+        print(snr, data["snr"])
+        
+        if snr != data["snr"]:
+            
+            snp.signal.set_pass_snr(bool(snr))
+
+            yn = {'1':'suitable', '0':'unsuitable'}
+
+            action = f"Marked {data['station']} as {yn[str(snr)]} for modeling."
+
+            print(snr, data["snr"])
+            return action, (not is_open), data["station"]
+
+
+    raise dash.exceptions.PreventUpdate
+
 
 @app.callback([
      Output("graph", "figure"), 
      Output("slider-position", "value"),
+     Output("slider-position", "disabled"),
      Output("slider-position", "min"),
      Output("slider-position", "max"),
      Output("slider-position", "marks"),
      Output("snr-pass", "value"),
     ],
-     Input("station-dropdown", "value")
-    )
-def display_graph_initial(station):
+    # Input("station-dropdown", "value")
+    Input("store", "data")
+    )   
+def display_graph_initial(data):
 
-    snp = SP.get_spectra(station)
+    # if data is None:
+    #     raise dash.exceptions.PreventUpdate
 
-    mn, mx = get_min_max_freqs(snp)
+    sta = data['station']
 
-    marks = get_marks(mn, mx)
+    snp = SP.get_spectra(sta)
 
-    value = get_band_vals(snp)
+    tf = data["snr"]
+
+    marks = get_marks(data["min f"], data["max f"])
+
+    # value = get_band_vals(snp)
 
     fig = make_fig(
         snp.signal.freq, 
         snp.signal.amp,
         snp.noise.freq, 
         snp.noise.amp,
-        snp.signal.get_pass_snr(),
-        value,
+        tf,
+        (data["min bf"], data["max bf"]),
         )
 
-    return fig, value, mn, mx, marks, (1 if snp.signal.get_pass_snr() else 0)
+    return (
+        fig, 
+        (data["min bf"], data["max bf"]),
+        not tf, # turns off the range slider if it can't be modeled
+        data["min f"], 
+        data["max f"], 
+        marks, 
+        tf
+        )
 
 
 @app.callback(
     Output("graph", "figure"),
     Input("slider-position", "value"),
-    State("graph", "figure"),
-    )
-def display_graph_update(npos, fig):
+    [State("graph", "figure"),
+     State("snr-pass", "value")   
+    ])
+def display_graph_update(npos, fig, snr):
 
+
+    if not snr:
+        raise dash.exceptions.PreventUpdate
 
     fig = go.Figure(fig)
 
-    if not check_for_none(npos, fig, fig['layout']['yaxis']['range']):
+    if not any_none(npos[0], fig, fig['layout']['yaxis']['range']):
 
         for pos, nm in zip(npos, ['start', 'end']):
             
@@ -193,38 +278,6 @@ def display_graph_update(npos, fig):
 
     return fig
 
-# @app.callback(
-#     Output("graph", "figure"),
-#     Input("snr-pass", "value"),
-#     State("graph", "figure")
-#     )
-# def show_bandwidth_lims():
-#     pass
-
-
-@app.callback(
-    [Output("log", "children"), ],
-    [Input("snr-pass", "value"), ],
-    [State("station-dropdown", "value"), ],
-    )
-def change_snr(snr, sta):
-
-    if sta is not None:
-        snp = SP.get_spectra(sta)
-        if snr is not None:
-            print(snr)
-            print(f"{sta} pass snr is {snp.signal.get_pass_snr()}")
-            if bool(snr) != snp.signal.get_pass_snr():
-                snp.signal.set_pass_snr(bool(snr))
-                return(f"changed {sta} pass snr to {bool(snr)}", )
-        return [f"{sta} has snr {bool(1 if snp.signal.get_pass_snr() else 0)}", ]
-    raise dash.exceptions.PreventUpdate
-
-
-
-
-
-    
 
 
 if __name__ == '__main__':
