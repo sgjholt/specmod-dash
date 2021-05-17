@@ -1,4 +1,4 @@
-SpecMod Dash - README
+SpecMod Dash - Overview
 =====================
 
 .. image:: https://readthedocs.org/projects/specmod-dash/badge/?version=latest
