@@ -32,15 +32,13 @@ def get_band_vals(snp):
 
 	value = get_min_max_freqs(snp)
 
-	if snp.signal.get_pass_snr():
-		try:
-			value = np.log10([np.round(snp.ubfreqs[0], 1), 
+
+	try:
+		value = np.log10([np.round(snp.ubfreqs[0], 1), 
 			         np.round(snp.ubfreqs[1], 1)])
 
-		except IndexError:
-			pass
-	else:
-		value = None, None
+	except IndexError:
+		pass
 
 	return value
 
@@ -71,7 +69,7 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 		)
 
 	if vals is not None and pass_snr:
-		for val, sl in zip(vals, [True, False]):
+		for val, sv in zip(vals, [True, False]):
 			fig.add_trace(
 				go.Scatter(
 					x=[10**val, 10**val], 
@@ -84,8 +82,8 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 					line_width=2,
 					line_color='black', 
 					name="bandwidth", 
-					showlegend=sl,
-					visible=True
+					legendgroup="bd",
+                    showlegend=sv
 					),
 				)
 
@@ -108,9 +106,10 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 			],
         legend=dict(
                 yanchor="bottom",
-                y=0.01,
-                xanchor="left",
-                x=0.01
+                y=1.02,
+                xanchor="right",
+                x=1,
+                orientation='h'
             )
 	   )
 

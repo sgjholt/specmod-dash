@@ -11,6 +11,7 @@ main.py
 
 # dependencies 
 import os
+import sys
 import dash
 import numpy as np
 import dash_core_components as dcc
@@ -72,7 +73,7 @@ controls = dbc.Card(
                         {'label': k, 
                             'value': k} for k in SP.get_available_channels()
                         ],
-                    # value=SP.get_available_channels()[0],
+                    value=SP.get_available_channels()[0],
                     clearable=False,
                 ),
 
@@ -92,7 +93,6 @@ controls = dbc.Card(
         ),
         dbc.FormGroup(
             [
-                # dbc.Label('Control Panel'),
                 dbc.Button(
                     'Stage change',
                     id='stage-change',
@@ -102,6 +102,21 @@ controls = dbc.Card(
             dbc.Tooltip(
                 "Click to update changes for spectra.",
                 target='stage-change',
+                placement="bottom"
+                ),
+            ]
+        ),
+        dbc.FormGroup(
+            [
+            dbc.Button(
+                    'Stage change',
+                    id='commit-change',
+                    className='mx-2',
+                    n_clicks=0,
+                ),
+            dbc.Tooltip(
+                "Click to save changes for spectra back to file.",
+                target='commit-change',
                 placement="bottom"
                 ),
             ]
@@ -172,7 +187,7 @@ app.layout = dbc.Container(
     ], fluid=True
 )
 
-# callbacks 
+# callbacks -------------------------------------------------------------------
 
 @app.callback(
     Output("store", "data"),
@@ -188,7 +203,6 @@ def update_store(sta, data):
         if data is None:
             data = SS
         
-        print(data["stations"].keys())
         snp = SP.get_spectra(sta)
         # min max frequencies possible
         mn, mx = get_min_max_freqs(snp)
@@ -209,7 +223,6 @@ def update_store(sta, data):
                         }
                     }
             )
-    print(data["stations"].keys())
     return data
 
 @app.callback(
@@ -233,25 +246,37 @@ def stage_change(*args):
     
     if not any_none(args) and n:
 
-        # snp = SP.get_spectra(data["stations"][sta])
+        # print(snr, 
+        #     data["stations"][sta]["snr"], 
+        #     np.power(10, bwd), 
+        #     data["stations"][sta]["min bf"], 
+        #     data["stations"][sta]["max bf"])
+        action = ""
 
-        print(snr, 
-            data["stations"][sta]["snr"], 
-            np.power(10, bwd), 
-            data["stations"][sta]["min bf"], 
-            data["stations"][sta]["max bf"])
-        
         if snr != data["stations"][sta]["snr"]:
             
-            # snp.signal.set_pass_snr(bool(snr))
-
             data["stations"][sta]["snr"] = snr
             
-            print(snr, data["stations"][sta]["snr"])
+            # print(snr, data["stations"][sta]["snr"])
 
             yn = {'1':'suitable', '0':'unsuitable'}
 
-            action = f"Marked {sta} as {yn[str(snr)]} for modeling."
+            action += f"Marked {sta} as {yn[str(snr)]} for modeling."
+
+        if not np.array_equal(bwd, 
+            (data["stations"][sta]["min bf"], 
+                data["stations"][sta]["max bf"])
+            ):
+            data["stations"][sta]["min bf"] = bwd[0]
+            data["stations"][sta]["max bf"] = bwd[1]
+
+            if action:
+                action += "and "
+
+            action += f"changed bandwidth limits of {sta}."
+
+            
+        if action:
 
             return action, (not is_open), data
 
@@ -312,47 +337,48 @@ def display_graph_initial(data, sta):
     Output("graph", "figure"),
     Input("slider-position", "value"),
     [State("graph", "figure"),
-     State("snr-pass", "value")   
+     State("store", "data"),
+     State("station-dropdown", "value")   
     ])
-def display_graph_update(npos, fig, snr):
+def display_graph_update(npos, fig, data, sta):
 
+    if not any_none(npos, fig, data, sta):
 
-    if not snr:
-        raise dash.exceptions.PreventUpdate
+        fig = go.Figure(fig)
 
-    fig = go.Figure(fig)
+        if data["stations"][sta]["snr"]:
+           
+            for pos, nm in zip(npos, ['start', 'end']):
+                
+                name = f"new bandwidth {nm}"
 
-    if not any_none(npos[0], fig, fig['layout']['yaxis']['range']):
-
-        for pos, nm in zip(npos, ['start', 'end']):
-            
-            name = f"new bandwidth {nm}"
-
-            if not is_auto_bandwidth(fig, pos):
-                if not trace_in_fig(fig, name):
-                    fig.add_trace(
-                        go.Scatter(
-                            x=[10**pos, 10**pos], 
-                            y=np.power(10, fig['layout']['yaxis']['range']),
-                            mode='lines',
-                            line_width=3,
-                            line_dash='dash',
-                            line_color='green', 
-                            name=f"new bandwidth {nm}", 
-                        )
-                    )
-
-                else:
-                    fig.for_each_trace(
-                        lambda trace: trace.update(
-                            x=[10**pos, 10**pos],
-
-                            ) if trace.name == name else (),
+                if not is_auto_bandwidth(fig, pos):
+                    if not trace_in_fig(fig, name):
+                        fig.add_trace(
+                            go.Scatter(
+                                x=[10**pos, 10**pos], 
+                                y=np.power(10, fig['layout']['yaxis']['range']),
+                                mode='lines',
+                                line_width=3,
+                                line_dash='dash',
+                                line_color='green', 
+                                name=f"new bandwidth {nm}", 
+                            )
                         )
 
-    return fig
+                    else:
+                        fig.for_each_trace(
+                            lambda trace: trace.update(
+                                x=[10**pos, 10**pos],
 
+                                ) if trace.name == name else (),
+                            )
 
+            return fig
+
+    return dash.no_update
+
+# @app.callback
 
 if __name__ == '__main__':
     app.run_server(debug=True)
