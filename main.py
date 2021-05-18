@@ -200,9 +200,12 @@ app.layout = dbc.Container(
 @app.callback(
     Output("store", "data"),
     Input("station-dropdown", "value"),
-    State("store", "data")
-    )
-def update_store(sta, data):
+    [
+     State("event-dropdown", "value"),
+     State("store", "data")
+    ]
+)
+def update_store(sta, ev, data):
 
     if sta is None:
         raise dash.exceptions.PreventUpdate
@@ -211,11 +214,14 @@ def update_store(sta, data):
         if data is None:
             data = SS
         
-        snp = SP.get_spectra(sta)
+        sp = get_event_spectra(Events.__path__._path[0], ev)
+
+        snp = sp.get_spectra(sta)
         # min max frequencies possible
         mn, mx = get_min_max_freqs(snp)
         # min max frequencies of best modeling bandwidth
         mnb, mxb = get_band_vals(snp)
+        
         data["stations"].update(
                     {sta:
                         {
@@ -395,23 +401,19 @@ def display_graph_update(npos, fig, data, sta):
      Output('alert-auto', 'children'), 
      Output('alert-auto', 'is_open'),
     ],
-    [Input('commit-change', "n_clicks")],
+    Input('commit-change', "n_clicks"),
     [
      State("alert-auto", "is_open"),
      State("event-dropdown", "value"),
      State("store", "data")
     ]
     )
-def commit_updates_and_save(*args):
-
-    n, is_open, ev, data = args
+def commit_updates_and_save(n, is_open, ev, data):
 
     if not any_none(n, is_open, ev, data):
 
         if n and data["stations"] is not None:
-            
-            print(args[:-1])
-
+        
             write_specs(Events.__path__._path[0], ev, data)
 
             msg = f"Saved spectra for {ev} for {[sta for sta in data['stations'].keys()]}."
