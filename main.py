@@ -21,7 +21,7 @@ from dash.dependencies import Input, Output, State
 # local imports
 from src.utils import *
 from src.specplot import *
-from src.specroutines import get_event_spectra
+from src.specroutines import get_event_spectra, write_specs
 # global paths
 import Events
 
@@ -109,7 +109,7 @@ controls = dbc.Card(
         dbc.FormGroup(
             [
             dbc.Button(
-                    'Stage change',
+                    'Save spectra',
                     id='commit-change',
                     className='mx-2',
                     n_clicks=0,
@@ -130,23 +130,16 @@ app.layout = dbc.Container(
 
     dbc.Row(
         [
-        dbc.Col(
-            [
-            dbc.Alert(
-                children=[],
-                id="alert-auto",
-                dismissable=True,
-                is_open=False,
-                duration=8000
+            dbc.Col(html.H3("SpecMod Dash"), md=3),
+            dbc.Col(
+                [
+                    html.H1("Spectra Review Panel", 
+                        className='text-right text-primary mk-4'), 
+                ]
             ),
-            ], width=12
-        ),
-        ]
+        ], no_gutters=True
     ),
-
-    html.H1("SpecMod Review Panel", className='text-right text-primary mk-4'), 
     html.Hr(),
-
     dbc.Row(
         [   
             dbc.Col(
@@ -183,6 +176,21 @@ app.layout = dbc.Container(
                 ], md=8  
             ), 
         ], align='center'
+    ),
+    dbc.Row(
+        [
+        dbc.Col(
+            [
+            dbc.Alert(
+                children=[],
+                id="alert-auto",
+                dismissable=True,
+                is_open=False,
+                duration=6000,
+            ),
+            ], width=12
+        ),
+        ]
     ),
     ], fluid=True
 )
@@ -254,6 +262,10 @@ def stage_change(*args):
         action = ""
 
         if snr != data["stations"][sta]["snr"]:
+
+            # if not data["stations"][sta]["snr"]:
+            #     data["stations"][sta]["min bf"] = data["stations"][sta]["min f"]
+            #     data["stations"][sta]["max bf"] = data["stations"][sta]["max f"]
             
             data["stations"][sta]["snr"] = snr
             
@@ -302,7 +314,7 @@ def display_graph_initial(data, sta):
 
     # if data is None:
     #     raise dash.exceptions.PreventUpdate
-    if any_none(data, sta):
+    if any_none(data["stations"], sta):
         return dash.no_update
 
     tf = data["stations"][sta]["snr"]
@@ -378,7 +390,38 @@ def display_graph_update(npos, fig, data, sta):
 
     return dash.no_update
 
-# @app.callback
+@app.callback(
+    [
+     Output('alert-auto', 'children'), 
+     Output('alert-auto', 'is_open'),
+    ],
+    [Input('commit-change', "n_clicks")],
+    [
+     State("alert-auto", "is_open"),
+     State("event-dropdown", "value"),
+     State("store", "data")
+    ]
+    )
+def commit_updates_and_save(*args):
+
+    n, is_open, ev, data = args
+
+    if not any_none(n, is_open, ev, data):
+
+        if n and data["stations"] is not None:
+            
+            print(args[:-1])
+
+            write_specs(Events.__path__._path[0], ev, data)
+
+            msg = f"Saved spectra for {ev} for {[sta for sta in data['stations'].keys()]}."
+            
+            if is_open:
+                is_open = False
+
+            return msg, (not is_open)
+    
+    return dash.no_update
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -44,7 +44,7 @@ def get_band_vals(snp):
 
 
 
-def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
+def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals):
 
 	fac=1.25
 
@@ -67,6 +67,8 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 			name='signal'
 			)
 		)
+
+	print(vals)
 
 	if vals is not None and pass_snr:
 		for val, sv in zip(vals, [True, False]):
