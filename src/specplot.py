@@ -99,13 +99,19 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals=None):
 				np.log10(namp.min()/fac)]), 
 			np.max([np.log10(samp.max()*fac), 
 				np.log10(namp.max()*fac)])
-			]
-		,
+			],
 		xaxis_range=[
 			np.min([np.log10(sfreq.min()/fac), 
 				np.log10(nfreq.min()/fac)]), 
 			np.max([np.log10(sfreq.max()*fac), 
 				np.log10(nfreq.max()*fac)])
-			]
-		)
+			],
+        legend=dict(
+                yanchor="bottom",
+                y=0.01,
+                xanchor="left",
+                x=0.01
+            )
+	   )
+
 	return fig

@@ -32,6 +32,8 @@ EV = "2012-10-08T12:12:12.760000Z"
 # shared specmod spectral group
 SP = get_event_spectra(Events.__path__._path[0], EV)
 
+SS = {"stations":{}}
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SPACELAB],
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0'}],
@@ -44,6 +46,25 @@ controls = dbc.Card(
     [
         dbc.FormGroup(
             [
+                dbc.Label("Select event"),
+                dcc.Dropdown(
+                    id='event-dropdown',
+                    options=[
+                        {'label': k[:-4], 
+                            'value': k} for k in os.listdir(
+                                                        Events.__path__._path[0]
+                                                    )
+                        ],
+                    # value=os.listdir(Events.__path__._path[0])[0],
+                    clearable=False,
+                    value=os.listdir(Events.__path__._path[0])[0],
+                    disabled=True
+                ),
+
+            ]
+        ),
+        dbc.FormGroup(
+            [
                 dbc.Label("Select station"),
                 dcc.Dropdown(
                     id='station-dropdown',
@@ -51,8 +72,8 @@ controls = dbc.Card(
                         {'label': k, 
                             'value': k} for k in SP.get_available_channels()
                         ],
-                    value=SP.get_available_channels()[0],
-                    clearable=False
+                    # value=SP.get_available_channels()[0],
+                    clearable=False,
                 ),
 
             ]
@@ -73,13 +94,13 @@ controls = dbc.Card(
             [
                 # dbc.Label('Control Panel'),
                 dbc.Button(
-                    'stage change',
+                    'Stage change',
                     id='stage-change',
                     className='mx-2',
                     n_clicks=0,
                 ),
             dbc.Tooltip(
-                "click to update changes made to spectra",
+                "Click to update changes for spectra.",
                 target='stage-change',
                 placement="bottom"
                 ),
@@ -108,12 +129,11 @@ app.layout = dbc.Container(
         ]
     ),
 
-    html.H1("SpecMod Review Panel", className='text-center text-primary mb-4'), 
+    html.H1("SpecMod Review Panel", className='text-right text-primary mk-4'), 
     html.Hr(),
 
     dbc.Row(
         [   
-            
             dbc.Col(
                 [
                     html.H5("Control Panel", className='text-center'), 
@@ -130,17 +150,16 @@ app.layout = dbc.Container(
 
                     dbc.FormGroup(
                         [
-                            
                             dbc.Label("Bandwidth (Hz)"),
                             dcc.RangeSlider(
                                 id='slider-position', 
-                                min=np.log10(0.01),
+                                min=np.log10(1),
                                 max=np.log10(100), 
-                                value=np.log10([1, 10]), 
+                                value=np.log10([1, 100]), 
                                 step=0.01,
-                                marks={i: '{}'.format(
+                                marks={i: '{}Hz'.format(
                                         np.round(10 ** i, 1)) for i in np.log10(
-                                        [0.1, 1, 10, 20, 50])},
+                                        [1, 10, 100])},
                                 # className="slider",
                                 allowCross=False,
                             )
@@ -158,54 +177,85 @@ app.layout = dbc.Container(
 @app.callback(
     Output("store", "data"),
     Input("station-dropdown", "value"),
+    State("store", "data")
     )
-def update_store(sta):
+def update_store(sta, data):
 
-    snp = SP.get_spectra(sta)
-    # min max frequencies possible
-    mn, mx = get_min_max_freqs(snp)
-    # min max frequencies of best modeling bandwidth
-    mnb, mxb = get_band_vals(snp)
+    if sta is None:
+        raise dash.exceptions.PreventUpdate
+
+    if data is None or sta not in data["stations"].keys():
+        if data is None:
+            data = SS
         
-    return {"station":sta, 
-            "snr": 1 if snp.signal.get_pass_snr() else 0,
-            "min f": mn,
-            "max f": mx,
-            "min bf":mnb,
-            "max bf":mxb,
-            }
+        print(data["stations"].keys())
+        snp = SP.get_spectra(sta)
+        # min max frequencies possible
+        mn, mx = get_min_max_freqs(snp)
+        # min max frequencies of best modeling bandwidth
+        mnb, mxb = get_band_vals(snp)
+        data["stations"].update(
+                    {sta:
+                        {
+                         "snr": 1 if snp.signal.get_pass_snr() else 0,
+                         "min f": mn,
+                         "max f": mx,
+                         "min bf": mnb,
+                         "max bf": mxb,
+                         "sf": snp.signal.freq,
+                         "sa": snp.signal.amp,
+                         "nf": snp.noise.freq,
+                         "na": snp.noise.amp,
+                        }
+                    }
+            )
+    print(data["stations"].keys())
+    return data
 
 @app.callback(
-    [Output('alert-auto', 'children'), 
-     Output('alert-auto', 'is_open'),
-     Output('station-dropdown', 'value'),
-     ],
+    [
+        Output('alert-auto', 'children'), 
+        Output('alert-auto', 'is_open'),
+        Output('store', 'data')
+    ],
     [Input('stage-change', 'n_clicks')],
-    [State('alert-auto', 'is_open'), 
-     State('snr-pass', 'value'),
-     State('store', 'data')]
+    [
+        State('alert-auto', 'is_open'), 
+        State('snr-pass', 'value'),
+        State('station-dropdown', 'value'),
+        State('store', 'data'),
+        State('slider-position', 'value')
+    ]
 )
 def stage_change(*args):
 
-    n, is_open, snr, data = args
+    n, is_open, snr, sta, data, bwd = args
     
     if not any_none(args) and n:
 
-        snp = SP.get_spectra(data["station"])
+        # snp = SP.get_spectra(data["stations"][sta])
 
-        print(snr, data["snr"])
+        print(snr, 
+            data["stations"][sta]["snr"], 
+            np.power(10, bwd), 
+            data["stations"][sta]["min bf"], 
+            data["stations"][sta]["max bf"])
         
-        if snr != data["snr"]:
+        if snr != data["stations"][sta]["snr"]:
             
-            snp.signal.set_pass_snr(bool(snr))
+            # snp.signal.set_pass_snr(bool(snr))
+
+            data["stations"][sta]["snr"] = snr
+            
+            print(snr, data["stations"][sta]["snr"])
 
             yn = {'1':'suitable', '0':'unsuitable'}
 
-            action = f"Marked {data['station']} as {yn[str(snr)]} for modeling."
+            action = f"Marked {sta} as {yn[str(snr)]} for modeling."
 
-            print(snr, data["snr"])
-            return action, (not is_open), data["station"]
+            return action, (not is_open), data
 
+        # if bwd
 
     raise dash.exceptions.PreventUpdate
 
@@ -220,38 +270,39 @@ def stage_change(*args):
      Output("snr-pass", "value"),
     ],
     # Input("station-dropdown", "value")
-    Input("store", "data")
+    Input("store", "data"),
+    State("station-dropdown", "value")
     )   
-def display_graph_initial(data):
+def display_graph_initial(data, sta):
 
     # if data is None:
     #     raise dash.exceptions.PreventUpdate
+    if any_none(data, sta):
+        return dash.no_update
 
-    sta = data['station']
+    tf = data["stations"][sta]["snr"]
 
-    snp = SP.get_spectra(sta)
-
-    tf = data["snr"]
-
-    marks = get_marks(data["min f"], data["max f"])
-
-    # value = get_band_vals(snp)
+    marks = get_marks(
+        data["stations"][sta]["min f"], 
+        data["stations"][sta]["max f"]
+        )
 
     fig = make_fig(
-        snp.signal.freq, 
-        snp.signal.amp,
-        snp.noise.freq, 
-        snp.noise.amp,
+        np.array(data["stations"][sta]["sf"]), 
+        np.array(data["stations"][sta]["sa"]),
+        np.array(data["stations"][sta]["nf"]), 
+        np.array(data["stations"][sta]["na"]),
         tf,
-        (data["min bf"], data["max bf"]),
+        (data["stations"][sta]["min bf"], 
+         data["stations"][sta]["max bf"]),
         )
 
     return (
         fig, 
-        (data["min bf"], data["max bf"]),
+        (data["stations"][sta]["min bf"], data["stations"][sta]["max bf"]),
         not tf, # turns off the range slider if it can't be modeled
-        data["min f"], 
-        data["max f"], 
+        data["stations"][sta]["min f"], 
+        data["stations"][sta]["max f"], 
         marks, 
         tf
         )
