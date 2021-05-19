@@ -426,4 +426,4 @@ def commit_updates_and_save(n, is_open, ev, data):
     return dash.no_update
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

@@ -117,3 +117,4 @@ dmypy.json
 .DS_Store
 # SpecMod
 Events/*
+assets/.DS_Store
