@@ -45,154 +45,171 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SPACELAB],
 
 controls = dbc.Card(
     [
-        dbc.FormGroup(
-            [
-                dbc.Label("Select event"),
-                dcc.Dropdown(
-                    id='event-dropdown',
-                    options=[
-                        {'label': k[:-4], 
-                            'value': k} for k in os.listdir(
-                                                        Events.__path__._path[0]
-                                                    )
-                        ],
-                    # value=os.listdir(Events.__path__._path[0])[0],
-                    clearable=False,
-                    value=os.listdir(Events.__path__._path[0])[0],
-                    disabled=True
-                ),
+        dbc.CardHeader(html.H5("Control Panel", className='text-center')),
+        dbc.CardBody(
+        [
+            dbc.FormGroup(
+                [
+                    dbc.Label("Select event"),
+                    dcc.Dropdown(
+                        id='event-dropdown',
+                        options=[
+                            {'label': k[:-4], 
+                                'value': k} for k in os.listdir(
+                                                            Events.__path__._path[0]
+                                                        )
+                            ],
+                        # value=os.listdir(Events.__path__._path[0])[0],
+                        clearable=False,
+                        value=os.listdir(Events.__path__._path[0])[0],
+                        disabled=True
+                    ),
 
-            ]
-        ),
-        dbc.FormGroup(
-            [
-                dbc.Label("Select station"),
-                dcc.Dropdown(
-                    id='station-dropdown',
-                    options=[
-                        {'label': k, 
-                            'value': k} for k in SP.get_available_channels()
-                        ],
-                    value=SP.get_available_channels()[0],
-                    clearable=False,
-                ),
+                    dbc.Label("Select station"),
+                    dcc.Dropdown(
+                        id='station-dropdown',
+                        options=[
+                            {'label': k.id, 
+                                'value': k.id} for k in sorted(SP.group.values(), 
+                                    key=lambda x: x.signal.meta['rhyp'])
+                            ],
+                        value=sorted(SP.group.values(), key=lambda x: x.signal.meta['rhyp'])[0].id,
+                        clearable=False,
+                    ),
 
-            ]
-        ),
-        dbc.FormGroup(
+                    dbc.Label("Can model?"),
+                    dcc.RadioItems(
+                        id='snr-pass',
+                        options=[
+                            {'label': 'Yes', 'value': 1},
+                            {'label': 'No', 'value': 0},
+                            ],
+                    ),
+                ]
+            ),
+            dbc.Label("Commit changes"),
+            dbc.ButtonGroup(
+                [
+                    dbc.Button(
+                        'Stage change',
+                        id='stage-change',
+                        className='mx-2',
+                        n_clicks=0,
+                    ),
+                    dbc.Tooltip(
+                        "Click to update changes for spectra.",
+                        target='stage-change',
+                        placement="bottom"
+                        ),
+                    dbc.Button(
+                        'Save spectra',
+                        id='commit-change',
+                        className='mx-2',
+                        n_clicks=0,
+                        ),
+                    dbc.Tooltip(
+                        "Click to save changes for spectra back to file.",
+                        target='commit-change',
+                        placement="bottom"
+                        ),
+                    ]
+                ),
+            ],
+        )
+    ], color="dark", outline=True, 
+)
+
+infocard = dbc.Card(
+    [
+        dbc.CardHeader(html.H5("Metadata", className='text-left')),
+        dbc.CardBody(
             [
-                dbc.Label("Can model?"),
-                dcc.RadioItems(
-                    id='snr-pass',
-                    options=[
-                        {'label': 'Yes', 'value': 1},
-                        {'label': 'No', 'value': 0},
-                        ],
+                dbc.ListGroup(
+                    [
+                        dbc.ListGroupItem(
+                            [
+                                dbc.ListGroupItemHeading("Hypo. Dist (km)"),
+                                dbc.ListGroupItemText("", id='hypo-dist'),
+                            ]
+                        ),
+                        dbc.ListGroupItem(                            [
+                                dbc.ListGroupItemHeading("Epi. Dist (km)"),
+                                dbc.ListGroupItemText("", id='epi-dist'),
+                            ],
+                        ),
+                    ], horizontal=True,
                 ),
             ]
-        ),
-        dbc.FormGroup(
-            [
-                dbc.Button(
-                    'Stage change',
-                    id='stage-change',
-                    className='mx-2',
-                    n_clicks=0,
-                ),
-            dbc.Tooltip(
-                "Click to update changes for spectra.",
-                target='stage-change',
-                placement="bottom"
-                ),
-            ]
-        ),
-        dbc.FormGroup(
-            [
-            dbc.Button(
-                    'Save spectra',
-                    id='commit-change',
-                    className='mx-2',
-                    n_clicks=0,
-                ),
-            dbc.Tooltip(
-                "Click to save changes for spectra back to file.",
-                target='commit-change',
-                placement="bottom"
-                ),
-            ]
-        ),
-    ], body=True
+        )
+    ]
 )
 
 app.layout = dbc.Container(
     [
-    dcc.Store(id="store"),
+        dcc.Store(id="store"),
 
-    dbc.Row(
-        [
-            dbc.Col(html.H3("SpecMod Dash"), md=3),
-            dbc.Col(
-                [
-                    html.H1("Spectra Review Panel", 
-                        className='text-right text-primary mk-4'), 
-                ]
-            ),
-        ], no_gutters=True
-    ),
-    html.Hr(),
-    dbc.Row(
-        [   
-            dbc.Col(
-                [
-                    html.H5("Control Panel", className='text-center'), 
-                    html.Hr(), 
-                    controls
-                ], md=3
-            ),
-
-            dbc.Col(
-                [   
-                    dcc.Graph(
-                        id='graph',
-                        ),
-
-                    dbc.FormGroup(
-                        [
-                            dbc.Label("Bandwidth (Hz)"),
-                            dcc.RangeSlider(
-                                id='slider-position', 
-                                min=np.log10(1),
-                                max=np.log10(100), 
-                                value=np.log10([1, 100]), 
-                                step=0.01,
-                                marks={i: '{}Hz'.format(
-                                        np.round(10 ** i, 1)) for i in np.log10(
-                                        [1, 10, 100])},
-                                # className="slider",
-                                allowCross=False,
-                            )
-                        ]
-                    ),
-                ], md=8  
-            ), 
-        ], align='center'
-    ),
-    dbc.Row(
-        [
-        dbc.Col(
+        dbc.Row(
             [
-            dbc.Alert(
-                children=[],
-                id="alert-auto",
-                dismissable=True,
-                is_open=False,
-                duration=6000,
-            ),
-            ], width=12
+                dbc.Col(html.H3("SpecMod Dash"), md=3),
+                dbc.Col(
+                    [
+                        html.H1("Spectra Review Panel", 
+                            className='text-right text-primary mk-4'), 
+                    ]
+                ),
+            ], no_gutters=True
         ),
-        ]
-    ),
-    ], fluid=True
+        html.Hr(),
+        dbc.Row(
+            [   
+                dbc.Col(controls, md=3),
+
+                dbc.Col(
+                    [   
+                        dcc.Graph(
+                            id='graph',
+                            ),
+
+                        dbc.FormGroup(
+                            [
+                                dbc.Label("Bandwidth (Hz)"),
+                                dcc.RangeSlider(
+                                    id='slider-position', 
+                                    min=np.log10(1),
+                                    max=np.log10(100), 
+                                    value=np.log10([1, 100]), 
+                                    step=0.01,
+                                    marks={i: '{}Hz'.format(
+                                            np.round(10 ** i, 1)) for i in np.log10(
+                                            [1, 10, 100])},
+                                    className="slider",
+                                    allowCross=False,
+                                )
+                            ]
+                        ),
+                        html.Hr(),
+                    ], md=8  
+                ), 
+            ], align='center'
+        ),
+        dbc.Row(
+            [
+                dbc.Col([infocard, ]),
+                
+                dbc.Col(
+                    [
+                    dbc.Alert(
+                        children=[],
+                        id="alert-auto",
+                        dismissable=True,
+                        is_open=False,
+                        duration=6000,
+                    ),
+                    ], width=12
+                ),
+            ], align='center'
+        ),
+    ], fluid=True, style={'font-family' : '"Times New Roman"'},
 )
 
 # callbacks -------------------------------------------------------------------
@@ -234,9 +251,11 @@ def update_store(sta, ev, data):
                          "sa": snp.signal.amp,
                          "nf": snp.noise.freq,
                          "na": snp.noise.amp,
+                         "meta": snp.signal.meta
                         }
                     }
-            )
+                )
+    print(data["stations"][sta]["meta"])
     return data
 
 @app.callback(
@@ -311,6 +330,8 @@ def stage_change(*args):
      Output("slider-position", "max"),
      Output("slider-position", "marks"),
      Output("snr-pass", "value"),
+     Output('epi-dist', 'children'), 
+     Output('hypo-dist', 'children'),
     ],
     # Input("station-dropdown", "value")
     Input("store", "data"),
@@ -347,7 +368,9 @@ def display_graph_initial(data, sta):
         data["stations"][sta]["min f"], 
         data["stations"][sta]["max f"], 
         marks, 
-        tf
+        tf,
+        f"{data['stations'][sta]['meta']['repi']:.2f}", 
+        f"{data['stations'][sta]['meta']['rhyp']:.2f}"
         )
 
 

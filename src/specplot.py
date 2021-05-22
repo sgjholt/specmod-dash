@@ -90,6 +90,7 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals):
 				)
 
 	fig.update_layout(
+		font_family="Times New Roman",
 		xaxis_title="Frequency (Hz)",
 		yaxis_title="Spec. Vel. ([m/s] s)",
 		xaxis_type="log", 
@@ -106,6 +107,7 @@ def make_fig(sfreq, samp, nfreq, namp, pass_snr, vals):
 			np.max([np.log10(sfreq.max()*fac), 
 				np.log10(nfreq.max()*fac)])
 			],
+		
         legend=dict(
                 yanchor="bottom",
                 y=1.02,
