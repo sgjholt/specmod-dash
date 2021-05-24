@@ -66,7 +66,7 @@ controls = dbc.Card(
                         clearable=False,
                     ),
 
-                    dbc.Label("Can model?"),
+                    dbc.Label("Good signal spectrum?"),
                     dcc.RadioItems(
                         id='snr-pass',
                         options=[
@@ -151,7 +151,7 @@ app.layout = dbc.Container(
         html.Hr(),
         dbc.Row(
             [   
-                dbc.Col(controls, md=3),
+                dbc.Col(controls, md=4),
 
                 dbc.Col(
                     [   
