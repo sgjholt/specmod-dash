@@ -28,12 +28,7 @@ import Events
 
 # globals ---------------------------------------------------------------------
 
-# test event
-EV = "2012-10-08T12:12:12.760000Z"
-# shared specmod spectral group
-SP = get_event_spectra(Events.__path__._path[0], EV)
-
-SS = {"stations":{}}
+SS = {}
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SPACELAB],
                 meta_tags=[{'name': 'viewport',
@@ -54,26 +49,20 @@ controls = dbc.Card(
                     dcc.Dropdown(
                         id='event-dropdown',
                         options=[
-                            {'label': k[:-4], 
-                                'value': k} for k in os.listdir(
-                                                            Events.__path__._path[0]
-                                                        )
-                            ],
-                        # value=os.listdir(Events.__path__._path[0])[0],
+                            {
+                                'label': k[:-4], 
+                                'value': k
+                            } for k in sorted(
+                                os.listdir(Events.__path__._path[0]))
+                                ],
+                        value=sorted(os.listdir(Events.__path__._path[0]))[0],
                         clearable=False,
-                        value=os.listdir(Events.__path__._path[0])[0],
-                        disabled=True
+                        # disabled=True
                     ),
 
                     dbc.Label("Select station"),
                     dcc.Dropdown(
                         id='station-dropdown',
-                        options=[
-                            {'label': k.id, 
-                                'value': k.id} for k in sorted(SP.group.values(), 
-                                    key=lambda x: x.signal.meta['rhyp'])
-                            ],
-                        value=sorted(SP.group.values(), key=lambda x: x.signal.meta['rhyp'])[0].id,
                         clearable=False,
                     ),
 
@@ -198,13 +187,13 @@ app.layout = dbc.Container(
                 
                 dbc.Col(
                     [
-                    dbc.Alert(
-                        children=[],
-                        id="alert-auto",
-                        dismissable=True,
-                        is_open=False,
-                        duration=6000,
-                    ),
+                        dbc.Alert(
+                            children=[],
+                            id="alert-auto",
+                            dismissable=True,
+                            is_open=False,
+                            duration=6000,
+                        ),
                     ], width=12
                 ),
             ], align='center'
@@ -214,22 +203,53 @@ app.layout = dbc.Container(
 
 # callbacks -------------------------------------------------------------------
 
+
+@app.callback(
+    [
+     Output("station-dropdown", "value"),
+     Output("station-dropdown", "options"),
+    ],
+    Input("event-dropdown", "value")
+    )
+def update_station_dropdown(ev):
+
+    sp = get_event_spectra(Events.__path__._path[0], ev)
+
+    value = sorted(sp.group.values(), 
+        key=lambda x: x.signal.meta['rhyp'])[0].id
+
+    options = [
+                {
+                 'label': k.id, 
+                 'value': k.id,
+                } for k in sorted(sp.group.values(), 
+                    key=lambda x: x.signal.meta['rhyp'])
+            ]
+
+    return value, options
+
+
+
 @app.callback(
     Output("store", "data"),
     Input("station-dropdown", "value"),
     [
      State("event-dropdown", "value"),
-     State("store", "data")
+     State("store", "data"),
     ]
 )
 def update_store(sta, ev, data):
 
-    if sta is None:
+    if any_none(sta, ev):
         raise dash.exceptions.PreventUpdate
 
-    if data is None or sta not in data["stations"].keys():
-        if data is None:
-            data = SS
+    if data is None:
+        data = SS
+
+    if ev not in data.keys():
+        data[ev] = {}
+
+    if sta not in data[ev].keys():
         
         sp = get_event_spectra(Events.__path__._path[0], ev)
 
@@ -239,8 +259,9 @@ def update_store(sta, ev, data):
         # min max frequencies of best modeling bandwidth
         mnb, mxb = get_band_vals(snp)
         
-        data["stations"].update(
-                    {sta:
+
+        metdat = {
+                    sta:
                         {
                          "snr": 1 if snp.signal.get_pass_snr() else 0,
                          "min f": mn,
@@ -254,15 +275,16 @@ def update_store(sta, ev, data):
                          "meta": snp.signal.meta
                         }
                     }
-                )
-    print(data["stations"][sta]["meta"])
+
+        data[str(ev)].update(metdat)
+
     return data
 
 @app.callback(
     [
         Output('alert-auto', 'children'), 
         Output('alert-auto', 'is_open'),
-        Output('store', 'data')
+        Output('store', 'data'),
     ],
     [Input('stage-change', 'n_clicks')],
     [
@@ -270,12 +292,13 @@ def update_store(sta, ev, data):
         State('snr-pass', 'value'),
         State('station-dropdown', 'value'),
         State('store', 'data'),
-        State('slider-position', 'value')
+        State('slider-position', 'value'),
+        State('event-dropdown', 'value'),
     ]
 )
 def stage_change(*args):
 
-    n, is_open, snr, sta, data, bwd = args
+    n, is_open, snr, sta, data, bwd, ev = args
     
     if not any_none(args) and n:
 
@@ -286,13 +309,13 @@ def stage_change(*args):
         #     data["stations"][sta]["max bf"])
         action = ""
 
-        if snr != data["stations"][sta]["snr"]:
+        if snr != data[ev][sta]["snr"]:
 
             # if not data["stations"][sta]["snr"]:
             #     data["stations"][sta]["min bf"] = data["stations"][sta]["min f"]
             #     data["stations"][sta]["max bf"] = data["stations"][sta]["max f"]
             
-            data["stations"][sta]["snr"] = snr
+            data[ev][sta]["snr"] = snr
             
             # print(snr, data["stations"][sta]["snr"])
 
@@ -301,11 +324,11 @@ def stage_change(*args):
             action += f"Marked {sta} as {yn[str(snr)]} for modeling."
 
         if not np.array_equal(bwd, 
-            (data["stations"][sta]["min bf"], 
-                data["stations"][sta]["max bf"])
+            (data[ev][sta]["min bf"], 
+                data[ev][sta]["max bf"])
             ):
-            data["stations"][sta]["min bf"] = bwd[0]
-            data["stations"][sta]["max bf"] = bwd[1]
+            data[ev][sta]["min bf"] = bwd[0]
+            data[ev][sta]["max bf"] = bwd[1]
 
             if action:
                 action += "and "
@@ -335,42 +358,43 @@ def stage_change(*args):
     ],
     # Input("station-dropdown", "value")
     Input("store", "data"),
-    State("station-dropdown", "value")
+    State("station-dropdown", "value"),
+    State("event-dropdown", "value"),
     )   
-def display_graph_initial(data, sta):
+def display_graph_initial(data, sta, ev):
 
     # if data is None:
     #     raise dash.exceptions.PreventUpdate
-    if any_none(data["stations"], sta):
+    if any_none(data[ev], sta, ev):
         return dash.no_update
 
-    tf = data["stations"][sta]["snr"]
+    tf = data[ev][sta]["snr"]
 
     marks = get_marks(
-        data["stations"][sta]["min f"], 
-        data["stations"][sta]["max f"]
+        data[ev][sta]["min f"], 
+        data[ev][sta]["max f"]
         )
 
     fig = make_fig(
-        np.array(data["stations"][sta]["sf"]), 
-        np.array(data["stations"][sta]["sa"]),
-        np.array(data["stations"][sta]["nf"]), 
-        np.array(data["stations"][sta]["na"]),
+        np.array(data[ev][sta]["sf"]), 
+        np.array(data[ev][sta]["sa"]),
+        np.array(data[ev][sta]["nf"]), 
+        np.array(data[ev][sta]["na"]),
         tf,
-        (data["stations"][sta]["min bf"], 
-         data["stations"][sta]["max bf"]),
+        (data[ev][sta]["min bf"], 
+         data[ev][sta]["max bf"]),
         )
 
     return (
         fig, 
-        (data["stations"][sta]["min bf"], data["stations"][sta]["max bf"]),
+        (data[ev][sta]["min bf"], data[ev][sta]["max bf"]),
         not tf, # turns off the range slider if it can't be modeled
-        data["stations"][sta]["min f"], 
-        data["stations"][sta]["max f"], 
+        data[ev][sta]["min f"], 
+        data[ev][sta]["max f"], 
         marks, 
         tf,
-        f"{data['stations'][sta]['meta']['repi']:.2f}", 
-        f"{data['stations'][sta]['meta']['rhyp']:.2f}"
+        f"{data[ev][sta]['meta']['repi']:.2f}", 
+        f"{data[ev][sta]['meta']['rhyp']:.2f}"
         )
 
 
@@ -379,15 +403,16 @@ def display_graph_initial(data, sta):
     Input("slider-position", "value"),
     [State("graph", "figure"),
      State("store", "data"),
-     State("station-dropdown", "value")   
+     State("station-dropdown", "value"),
+     State("event-dropdown", "value"),   
     ])
-def display_graph_update(npos, fig, data, sta):
+def display_graph_update(npos, fig, data, sta, ev):
 
-    if not any_none(npos, fig, data, sta):
+    if not any_none(npos, fig, data, sta, ev):
 
         fig = go.Figure(fig)
 
-        if data["stations"][sta]["snr"]:
+        if data[ev][sta]["snr"]:
            
             for pos, nm in zip(npos, ['start', 'end']):
                 
@@ -433,13 +458,13 @@ def display_graph_update(npos, fig, data, sta):
     )
 def commit_updates_and_save(n, is_open, ev, data):
 
-    if not any_none(n, is_open, ev, data):
+    if not any_none(n, is_open, data):
 
-        if n and data["stations"] is not None:
+        if n and data is not None:
         
-            write_specs(Events.__path__._path[0], ev, data)
+            write_specs(Events.__path__._path[0], data)
 
-            msg = f"Saved spectra for {ev} for {[sta for sta in data['stations'].keys()]}."
+            msg = f"Saved spectra for {[ev for ev in data.keys()]}."
             
             if is_open:
                 is_open = False

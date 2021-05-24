@@ -30,7 +30,7 @@ def get_event_spectra(pdir: str, ev: str) -> Spectra:
     return sp
 
 
-def write_specs(pdir: str, ev: str, data: dict) -> None:
+def write_specs(pdir: str, data: dict) -> None:
     """
     Writes the spectra for a given local specmod event spectra group
     for a given event.
@@ -43,26 +43,29 @@ def write_specs(pdir: str, ev: str, data: dict) -> None:
     Returns:
         None
     """
-    sp = get_event_spectra(pdir, ev)
 
     # iterate over the values in data which are the ones that have been ...
     # inspected and possibly changed. 
-    for sta, meta in data["stations"].items():
+    for ev, stas in data.items():
 
-        snp = sp.get_spectra(sta)
+        sp = get_event_spectra(pdir, ev)
         
-        # print(sta, meta['snr'], snp.signal.get_pass_snr())
+        for sta, meta in stas.items():
 
-        snp.signal.set_pass_snr(meta["snr"])
+            snp = sp.get_spectra(sta)
+            
+            # print(sta, meta['snr'], snp.signal.get_pass_snr())
 
-        # print(sta, meta['snr'], snp.signal.get_pass_snr())
-        # if it can be modeled it should also have a bandwidth to set
-        if meta["snr"]:
-            snp.ubfreqs = np.array([10**meta["min bf"], 10**meta["max bf"]])
-        # if it can't be modeled then I set ubfreqs to an empty array in SpecMod
-        if not meta["snr"]:
-            snp.ubfreqs = np.array([])
+            snp.signal.set_pass_snr(meta["snr"])
+
+            # print(sta, meta['snr'], snp.signal.get_pass_snr())
+            # if it can be modeled it should also have a bandwidth to set
+            if meta["snr"]:
+                snp.ubfreqs = np.array([10**meta["min bf"], 10**meta["max bf"]])
+            # if it can't be modeled then I set ubfreqs to an empty array in SpecMod
+            if not meta["snr"]:
+                snp.ubfreqs = np.array([])
 
 
-    sp.write_spectra(format_spectra_path(pdir, ev), sp, method='pickle')
-    print(f"wrote {ev} to file at {format_spectra_path(pdir, ev)}")
+        sp.write_spectra(format_spectra_path(pdir, ev), sp, method='pickle')
+        print(f"wrote {ev} to file at {format_spectra_path(pdir, ev)}")
