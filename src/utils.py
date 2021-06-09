@@ -2,8 +2,24 @@
 A module that contains utility functions for specmod-dash.
 """
 
+import yaml 
 import plotly.graph_objects as go
 
+
+def get_config(name: str = "config.yaml") -> dict:
+    """
+    Parses an arbitrary config file. Assumes the default will be 
+    'config.yaml'.
+
+    Args:
+        name (str): The name of the YAML file. Default is "config.yaml".
+
+    Returns:
+        opt (dict): A dictionary containing the parsed YAML file.
+    """
+    with open(f"{name}", 'r') as config:
+        opts = yaml.safe_load(config)
+    return opts
 
 def trace_in_fig(fig: go.Figure, name: str) -> bool:
     """

@@ -2,11 +2,10 @@
 
 """
 main.py
-
     The main file to run the dash application.
 """
 
-# Run this app with `python app.py` and
+# Run this app with `python main.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
 # dependencies 
@@ -22,11 +21,12 @@ from dash.dependencies import Input, Output, State
 from src.utils import *
 from src.specplot import *
 from src.specroutines import get_event_spectra, write_specs
-# global paths
-import Events
-
 
 # globals ---------------------------------------------------------------------
+
+config = get_config()
+
+evdir = config["event-path"]["parent-directory"]
 
 SS = {}
 
@@ -48,28 +48,28 @@ controls = dbc.Card(
                     dbc.Label("Select event"),
                     dcc.Dropdown(
                         id='event-dropdown',
-                        options=[
+                        options = [
                             {
                                 'label': k[:-4], 
                                 'value': k
                             } for k in sorted(
-                                os.listdir(Events.__path__._path[0]))
+                                os.listdir(evdir))
                                 ],
-                        value=sorted(os.listdir(Events.__path__._path[0]))[0],
-                        clearable=False,
+                        value = sorted(os.listdir(evdir))[0],
+                        clearable = False,
                         # disabled=True
                     ),
 
                     dbc.Label("Select station"),
                     dcc.Dropdown(
-                        id='station-dropdown',
-                        clearable=False,
+                        id = 'station-dropdown',
+                        clearable = False,
                     ),
 
                     dbc.Label("Good signal spectrum?"),
                     dcc.RadioItems(
-                        id='snr-pass',
-                        options=[
+                        id = 'snr-pass',
+                        options = [
                             {'label': 'Yes', 'value': 1},
                             {'label': 'No', 'value': 0},
                             ],
@@ -81,36 +81,36 @@ controls = dbc.Card(
                 [
                     dbc.Button(
                         'Stage change',
-                        id='stage-change',
-                        className='mx-2',
-                        n_clicks=0,
+                        id = 'stage-change',
+                        className = 'mx-2',
+                        n_clicks = 0,
                     ),
                     dbc.Tooltip(
                         "Click to update changes for spectra.",
-                        target='stage-change',
-                        placement="bottom"
+                        target = 'stage-change',
+                        placement = "bottom"
                         ),
                     dbc.Button(
                         'Save spectra',
-                        id='commit-change',
-                        className='mx-2',
-                        n_clicks=0,
+                        id = 'commit-change',
+                        className = 'mx-2',
+                        n_clicks = 0,
                         ),
                     dbc.Tooltip(
                         "Click to save changes for spectra back to file.",
-                        target='commit-change',
-                        placement="bottom"
+                        target = 'commit-change',
+                        placement = "bottom"
                         ),
                     ]
                 ),
             ],
         )
-    ], color="dark", outline=True, 
+    ], color = "dark", outline = True, 
 )
 
 infocard = dbc.Card(
     [
-        dbc.CardHeader(html.H5("Metadata", className='text-left')),
+        dbc.CardHeader(html.H5("Metadata", className = 'text-left')),
         dbc.CardBody(
             [
                 dbc.ListGroup(
@@ -118,15 +118,15 @@ infocard = dbc.Card(
                         dbc.ListGroupItem(
                             [
                                 dbc.ListGroupItemHeading("Hypo. Dist (km)"),
-                                dbc.ListGroupItemText("", id='hypo-dist'),
+                                dbc.ListGroupItemText("", id = 'hypo-dist'),
                             ]
                         ),
                         dbc.ListGroupItem(                            [
                                 dbc.ListGroupItemHeading("Epi. Dist (km)"),
-                                dbc.ListGroupItemText("", id='epi-dist'),
+                                dbc.ListGroupItemText("", id = 'epi-dist'),
                             ],
                         ),
-                    ], horizontal=True,
+                    ], horizontal = True,
                 ),
             ]
         )
@@ -135,51 +135,53 @@ infocard = dbc.Card(
 
 app.layout = dbc.Container(
     [
-        dcc.Store(id="store"),
+        dcc.Store(id = "store"),
 
         dbc.Row(
             [
-                dbc.Col(html.H3("SpecMod Dash"), md=3),
+                dbc.Col(html.H3("SpecMod Dash"), md = 3),
                 dbc.Col(
                     [
                         html.H1("Spectra Review Panel", 
-                            className='text-right text-primary mk-4'), 
+                            className = 'text-right text-primary mk-4'), 
                     ]
                 ),
-            ], no_gutters=True
+            ], no_gutters = True
         ),
         html.Hr(),
         dbc.Row(
             [   
-                dbc.Col(controls, md=4),
+                dbc.Col(controls, md = 4),
 
                 dbc.Col(
                     [   
                         dcc.Graph(
-                            id='graph',
+                            id = 'graph',
                             ),
 
                         dbc.FormGroup(
                             [
                                 dbc.Label("Bandwidth (Hz)"),
                                 dcc.RangeSlider(
-                                    id='slider-position', 
-                                    min=np.log10(1),
-                                    max=np.log10(100), 
-                                    value=np.log10([1, 100]), 
-                                    step=0.01,
-                                    marks={i: '{}Hz'.format(
-                                            np.round(10 ** i, 1)) for i in np.log10(
-                                            [1, 10, 100])},
-                                    className="slider",
-                                    allowCross=False,
+                                    id = 'slider-position', 
+                                    min = np.log10(1),
+                                    max = np.log10(100), 
+                                    value = np.log10([1, 100]), 
+                                    step = 0.01,
+                                    marks = {
+                                    i: '{}Hz'.format(
+                                        np.round(10 ** i, 1)
+                                        ) for i in np.log10([1, 10, 100])
+                                    },
+                                    className = "slider",
+                                    allowCross = False,
                                 )
                             ]
                         ),
                         html.Hr(),
-                    ], md=8  
+                    ], md = 8  
                 ), 
-            ], align='center'
+            ], align = 'center'
         ),
         dbc.Row(
             [
@@ -188,17 +190,17 @@ app.layout = dbc.Container(
                 dbc.Col(
                     [
                         dbc.Alert(
-                            children=[],
-                            id="alert-auto",
-                            dismissable=True,
-                            is_open=False,
-                            duration=6000,
+                            children = [],
+                            id = "alert-auto",
+                            dismissable = True,
+                            is_open = False,
+                            duration = 6000,
                         ),
-                    ], width=12
+                    ], width = 12
                 ),
-            ], align='center'
+            ], align = 'center'
         ),
-    ], fluid=True, style={'font-family' : '"Times New Roman"'},
+    ], fluid = True, style = {'font-family' : '"Times New Roman"'},
 )
 
 # callbacks -------------------------------------------------------------------
@@ -212,19 +214,21 @@ app.layout = dbc.Container(
     Input("event-dropdown", "value")
     )
 def update_station_dropdown(ev):
-
-    sp = get_event_spectra(Events.__path__._path[0], ev)
+    
+    sp = get_event_spectra(evdir, ev)
 
     value = sorted(sp.group.values(), 
         key=lambda x: x.signal.meta['rhyp'])[0].id
 
     options = [
-                {
-                 'label': k.id, 
-                 'value': k.id,
-                } for k in sorted(sp.group.values(), 
-                    key=lambda x: x.signal.meta['rhyp'])
-            ]
+        {
+        'label': k.id, 
+        'value': k.id
+        } for k in sorted(
+            sp.group.values(), 
+            key = lambda x: x.signal.meta['rhyp']
+            )
+        ]
 
     return value, options
 
@@ -251,7 +255,7 @@ def update_store(sta, ev, data):
 
     if sta not in data[ev].keys():
         
-        sp = get_event_spectra(Events.__path__._path[0], ev)
+        sp = get_event_spectra(evdir, ev)
 
         snp = sp.get_spectra(sta)
         # min max frequencies possible
@@ -259,7 +263,6 @@ def update_store(sta, ev, data):
         # min max frequencies of best modeling bandwidth
         mnb, mxb = get_band_vals(snp)
         
-
         metdat = {
                     sta:
                         {
@@ -422,24 +425,24 @@ def display_graph_update(npos, fig, data, sta, ev):
                     if not trace_in_fig(fig, name):
                         fig.add_trace(
                             go.Scatter(
-                                x=[10**pos, 10**pos], 
-                                y=np.power(10, fig['layout']['yaxis']['range']),
-                                mode='lines',
-                                line_width=3,
-                                line_dash='dash',
-                                line_color='green', 
-                                name=f"new bandwidth {nm}", 
+                                x = [10**pos, 10**pos], 
+                                y = np.power(
+                                    10, 
+                                    fig['layout']['yaxis']['range']
+                                    ),
+                                mode = 'lines',
+                                line_width = 3,
+                                line_dash = 'dash',
+                                line_color = 'green', 
+                                name = f"new bandwidth {nm}",
+                                )
                             )
-                        )
-
                     else:
                         fig.for_each_trace(
                             lambda trace: trace.update(
                                 x=[10**pos, 10**pos],
-
                                 ) if trace.name == name else (),
                             )
-
             return fig
 
     return dash.no_update
@@ -462,7 +465,7 @@ def commit_updates_and_save(n, is_open, ev, data):
 
         if n and data is not None:
         
-            write_specs(Events.__path__._path[0], data)
+            write_specs(evdir, data)
 
             msg = f"Saved spectra for {[ev for ev in data.keys()]}."
             
